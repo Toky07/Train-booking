@@ -1,0 +1,43 @@
+version: '3'
+services:
+  train_booking_api:
+    container_name: train_booking_api
+    build:
+      context: ./train_booking_api
+      dockerfile: Dockerfile
+    volumes:
+      - ./train_booking_api:/usr/src/app
+    depends_on:
+      - train_booking_db 
+    ports:
+      - 8000:8000
+    env_file:
+      - ./train_booking_api/.env
+
+  #Database
+  train_booking_db:
+    container_name: train_booking_db 
+    build:
+      context: .docker/postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      PGDATA: /data/postgres
+    user: "${UID}:${GID}"
+    volumes:
+      - .docker/postgres/db:/data/postgres
+    ports:
+      - "5432:5432"
+
+  train_booking_pgadmin:
+    container_name: train_booking_pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    volumes:
+      - .docker/pgadmin:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+  
